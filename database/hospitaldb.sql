@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 13, 2023 at 05:06 AM
+-- Generation Time: Jun 13, 2023 at 07:47 AM
 -- Server version: 8.0.31
 -- PHP Version: 8.1.12
 
@@ -100,8 +100,8 @@ CREATE TABLE `audit_table` (
 --
 
 INSERT INTO `audit_table` (`patient_number`, `doctor_number`, `date_admitted`, `date_discharged`) VALUES
-('PT001', 'DR001', '2022-01-15', '2022-01-20'),
-('PT002', 'DR002', '2022-02-20', '2022-02-25');
+('PT001', 'DR001', '2022-01-15', '2022-01-23'),
+('PT002', 'DR002', '2022-02-20', '2022-02-20');
 
 -- --------------------------------------------------------
 
@@ -159,6 +159,14 @@ CREATE TRIGGER `check_doctor_numberDC` BEFORE INSERT ON `doc_on_call` FOR EACH R
 END
 $$
 DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `check_doctor_numberDC_Update` BEFORE UPDATE ON `doc_on_call` FOR EACH ROW BEGIN
+  IF NEW.doctor_number NOT LIKE 'DC%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -189,6 +197,14 @@ INSERT INTO `doc_reg` (`doctor_number`, `doctor_name`, `qualification`, `address
 --
 DELIMITER $$
 CREATE TRIGGER `check_doctor_numberDR` BEFORE INSERT ON `doc_reg` FOR EACH ROW BEGIN
+  IF NEW.doctor_number NOT LIKE 'DR%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `check_doctor_numberDR_Update` BEFORE UPDATE ON `doc_reg` FOR EACH ROW BEGIN
   IF NEW.doctor_number NOT LIKE 'DR%' THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
   END IF;
@@ -291,7 +307,7 @@ CREATE TABLE `pat_chkup` (
 --
 
 INSERT INTO `pat_chkup` (`patient_number`, `doctor_number`, `date_of_checkup`, `diagnosis`, `treatment`, `status`) VALUES
-('PT001', 'DR001', '2022-01-15', 'Hypertension', 'Prescribed medication', 'regular'),
+('PT001', 'DR001', '2022-01-15', 'Hypertension', 'Prescribed medication', 'admitted'),
 ('PT002', 'DR002', '2022-02-20', 'Fractured ankles', 'Applied cast', 'regular');
 
 --
@@ -299,6 +315,14 @@ INSERT INTO `pat_chkup` (`patient_number`, `doctor_number`, `date_of_checkup`, `
 --
 DELIMITER $$
 CREATE TRIGGER `statusPatient` BEFORE INSERT ON `pat_chkup` FOR EACH ROW BEGIN
+  IF NEW.status NOT IN ('admitted', 'referred for operation', 'regular') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor status';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `statusPatientUpdate` BEFORE UPDATE ON `pat_chkup` FOR EACH ROW BEGIN
   IF NEW.status NOT IN ('admitted', 'referred for operation', 'regular') THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor status';
   END IF;
@@ -326,14 +350,21 @@ CREATE TABLE `pat_dis` (
 --
 
 INSERT INTO `pat_dis` (`patient_number`, `treatment_given`, `treatment_advice`, `payment_made`, `mode_of_payment`, `date_discharged`) VALUES
-('PT001', 'Prescribed medication', 'Follow-up visit in 3 weeks', '500.00', 'Cash', '2022-01-20'),
-('PT002', 'Applied cast', 'Keep the cast for 4 weeks', '800.00', 'Credit Card', '2022-02-25');
+('PT001', 'Prescribed medication', 'Follow-up visit in 3 weeks', '500.00', 'Cash', '2022-01-23'),
+('PT002', 'Applied cast', 'Keep the cast for 4 weeks', '800.00', 'Credit Card', '2022-02-20');
 
 --
 -- Triggers `pat_dis`
 --
 DELIMITER $$
 CREATE TRIGGER `log_discharge` AFTER INSERT ON `pat_dis` FOR EACH ROW BEGIN
+  UPDATE audit_table SET date_discharged = NEW.date_discharged
+  WHERE patient_number = NEW.patient_number;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `log_discharge_update` AFTER UPDATE ON `pat_dis` FOR EACH ROW BEGIN
   UPDATE audit_table SET date_discharged = NEW.date_discharged
   WHERE patient_number = NEW.patient_number;
 END
@@ -457,6 +488,17 @@ INSERT INTO `room_details` (`room_number`, `room_type`, `status`, `patient_numbe
 --
 DELIMITER $$
 CREATE TRIGGER `check_room_details` BEFORE INSERT ON `room_details` FOR EACH ROW BEGIN
+  IF NEW.room_type NOT IN ('G', 'P') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid room type';
+  END IF;
+  IF NEW.status NOT IN ('Y', 'N') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid status';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `check_room_details_Update` BEFORE UPDATE ON `room_details` FOR EACH ROW BEGIN
   IF NEW.room_type NOT IN ('G', 'P') THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid room type';
   END IF;
