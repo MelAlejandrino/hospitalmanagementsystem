@@ -12,8 +12,8 @@ function Home() {
         <div className="members">
           <h1>MEMBERS OF THIS SYSTEM:</h1>
           <ul role="list">
-            <li>Hazara</li>
-            <li>Kirk</li>
+            <li>Hazara Golosinda</li>
+            <li>Kirk Villanueva</li>
             <li>Lourdes Faye</li>
           </ul>
         </div>
