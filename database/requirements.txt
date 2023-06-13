@@ -33,7 +33,16 @@ DELIMITER ;
 CREATE TRIGGER log_discharge AFTER INSERT ON PAT_DIS
 FOR EACH ROW
 BEGIN
-  UPDATE audit_table SET date_discharged = NEW.date_of_discharge
+  UPDATE audit_table SET date_discharged = NEW.date_discharged
+  WHERE patient_number = NEW.patient_number;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER log_discharge_update AFTER UPDATE ON PAT_DIS
+FOR EACH ROW
+BEGIN
+  UPDATE audit_table SET date_discharged = NEW.date_discharged
   WHERE patient_number = NEW.patient_number;
 END//
 DELIMITER ;

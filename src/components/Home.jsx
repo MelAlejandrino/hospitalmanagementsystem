@@ -27,6 +27,9 @@ function Home() {
           <Link to="ListDataMart">
             DATA MART
           </Link>
+          <Link to="ListAuditTable">
+            AUDIT TABLE
+          </Link>
         </div>
       </div>
     </>

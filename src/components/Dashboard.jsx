@@ -49,6 +49,7 @@ import Rooms from "./Rooms";
 import ListOccupiedRooms from "./ListOccupiedRooms";
 import ListVacantRooms from "./ListVacantRooms";
 import ListDataMart from "./ListDataMart";
+import ListAuditTable from "./ListAuditTable";
 
 function Dashboard() {
   return (
@@ -154,8 +155,8 @@ function Dashboard() {
                 <Route path="/ListVacantRooms" element={<ListVacantRooms />} />
                 <Route path="/ListDataMart" element={<ListDataMart />} />
 
-                {/* VIEW OCCUPIED ROOMS */}
-                <Route path="/ListOccupiedRooms" element={<ListOccupiedRooms />} />
+                {/* Audit Table */}
+                <Route path="/ListAuditTable" element={<ListAuditTable />} />
 
               </Routes>
             </Box>

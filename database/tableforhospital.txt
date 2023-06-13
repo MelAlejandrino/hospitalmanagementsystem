@@ -43,9 +43,20 @@ CREATE TABLE DOC_REG (
   FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number),
   FOREIGN KEY (doctor_name) REFERENCES ALL_DOCTORS(doctor_name)
 );
+
 //TRIGGER FOR DR ONLY
 DELIMITER //
 CREATE TRIGGER check_doctor_numberDR BEFORE INSERT ON DOC_REG
+FOR EACH ROW
+BEGIN
+  IF NEW.doctor_number NOT LIKE 'DR%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_doctor_numberDR_Update BEFORE UPDATE ON DOC_REG
 FOR EACH ROW
 BEGIN
   IF NEW.doctor_number NOT LIKE 'DR%' THEN
@@ -69,6 +80,16 @@ CREATE TABLE DOC_ON_CALL (
 //TRIGGER FOR DC ONLY
 DELIMITER //
 CREATE TRIGGER check_doctor_numberDC BEFORE INSERT ON DOC_ON_CALL
+FOR EACH ROW
+BEGIN
+  IF NEW.doctor_number NOT LIKE 'DC%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_doctor_numberDC_Update BEFORE UPDATE ON DOC_ON_CALL
 FOR EACH ROW
 BEGIN
   IF NEW.doctor_number NOT LIKE 'DC%' THEN
@@ -107,6 +128,16 @@ CREATE TABLE PAT_CHKUP (
 //TRIGGER FOR STATUS
 DELIMITER //
 CREATE TRIGGER statusPatient BEFORE INSERT ON PAT_CHKUP
+FOR EACH ROW
+BEGIN
+  IF NEW.status NOT IN ('admitted', 'referred for operation', 'regular') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor status';
+  END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER statusPatientUpdate BEFORE UPDATE ON PAT_CHKUP
 FOR EACH ROW
 BEGIN
   IF NEW.status NOT IN ('admitted', 'referred for operation', 'regular') THEN
@@ -203,7 +234,33 @@ END//
 DELIMITER ;
 
 DELIMITER //
+CREATE TRIGGER check_room_details_Update BEFORE UPDATE ON ROOM_DETAILS
+FOR EACH ROW
+BEGIN
+  IF NEW.room_type NOT IN ('G', 'P') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid room type';
+  END IF;
+  IF NEW.status NOT IN ('Y', 'N') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid status';
+  END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
 CREATE TRIGGER check_operation_theater BEFORE INSERT ON OPERATION_THEATER
+FOR EACH ROW
+BEGIN
+  IF NEW.operation_theater_type NOT IN ('general', 'special') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid operation theater type';
+  END IF;
+  IF NEW.status NOT IN ('Y', 'N') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid status';
+  END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_operation_theater_update BEFORE UPDATE ON OPERATION_THEATER
 FOR EACH ROW
 BEGIN
   IF NEW.operation_theater_type NOT IN ('general', 'special') THEN
@@ -219,6 +276,7 @@ CREATE TABLE audit_table (
   patient_number VARCHAR(10) NOT NULL,
   doctor_number VARCHAR(10) NOT NULL,
   date_admitted DATE NOT NULL,
+  date_discharged DATE NOT NULL,
   PRIMARY KEY (patient_number, doctor_number, date_admitted),
   FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number),
   FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number)
