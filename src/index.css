@@ -1,0 +1,167 @@
+*, *::before, *::after{
+	box-sizing: border-box;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	font: inherit;
+}
+
+html, body, section{
+	min-height: 100vh;
+}
+
+img, picture, svg, video{
+	display: block;
+	max-width: 100%;
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+}
+a{
+text-decoration: none;
+}
+
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+}
+
+body {
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+}
+
+/* Remove all animations, transitions and smooth scroll for people that prefer not to see them */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+   scroll-behavior: auto;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* general styling */
+form{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1em;
+}
+.dashboard-container{
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: column;
+  gap: 1em;
+}
+.card-images{
+  font-size: 5em !important;
+}
+
+.dashboard-card{
+  display: flex;
+  align-items: center;
+  padding: 1.5em;
+  background-color: rgba(0, 0, 0, 0.103);
+  text-align: center;
+  border-radius: 0.5em;
+}
+
+ul{
+  display: flex;
+  gap: 1em;
+}
+
+.navbar a{
+  background-color: black;
+  padding: 0.5em 1em;
+  border-radius: 0.2em;
+  color: white;
+}
+table{
+  width: 100%;
+}
+td, th{
+  border: 1px solid black;
+  padding: 0.5em;
+}
+a{
+  color: black;
+}
+
+input{
+  padding: 1em;
+}
+
+.button-submit{
+  padding: 1em;
+}
+.actionCol{
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  font-weight: 600;
+
+}
+
+.actionCol > * {
+  text-transform: uppercase;
+}
+
+
+button{
+  background-color: black;
+  color: white;
+  padding: 0.3em 0.5em;
+  border-radius: 0.3em;
+  cursor: pointer;
+}
+
+.homepage{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5em;
+}
+
+.members{
+  text-align: center;
+}
+.members{
+  color: gray;
+}
+.members > h1{
+
+  font-size: 2rem;
+}
+
+.members > ul{
+  display: flex;
+  justify-content: center;
+}
+
+.links a{
+  background-color: black;
+  color: white;
+  padding: 1em;
+  border-radius: 0.3em;
+  text-transform: uppercase;
+}
+
+.links{
+  display: flex;
+  gap: 1em;
+}

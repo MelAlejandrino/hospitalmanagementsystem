@@ -1,0 +1,227 @@
+CREATE TABLE DEPARTMENT (
+  department_name VARCHAR(200) PRIMARY KEY,
+  department_location VARCHAR(200) NOT NULL,
+  facilities_available VARCHAR(200) NOT NULL
+);
+
+CREATE TABLE ALL_DOCTORS (
+  identity_number VARCHAR(10) PRIMARY KEY,
+  doctor_name VARCHAR(200) NOT NULL UNIQUE,
+  department_name VARCHAR(200) NOT NULL,
+  FOREIGN KEY (department_name) REFERENCES DEPARTMENT(department_name)
+);
+
+DELIMITER //
+CREATE TRIGGER check_identity_number_update BEFORE UPDATE ON ALL_DOCTORS
+FOR EACH ROW
+BEGIN
+  IF (NEW.identity_number NOT LIKE 'DR%' AND NEW.identity_number NOT LIKE 'DC%') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_identity_number BEFORE INSERT ON ALL_DOCTORS
+FOR EACH ROW
+BEGIN
+  IF (NEW.identity_number NOT LIKE 'DR%' AND NEW.identity_number NOT LIKE 'DC%') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END//
+DELIMITER ;
+
+
+CREATE TABLE DOC_REG (
+  doctor_number VARCHAR(10) PRIMARY KEY,
+  doctor_name VARCHAR(200) NOT NULL,
+  qualification VARCHAR(50) NOT NULL,
+  address VARCHAR(100) NOT NULL,
+  phone_number VARCHAR(15) NOT NULL,
+  salary DECIMAL(10,2) NOT NULL,
+  date_of_joining DATE NOT NULL,
+  FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number),
+  FOREIGN KEY (doctor_name) REFERENCES ALL_DOCTORS(doctor_name)
+);
+//TRIGGER FOR DR ONLY
+DELIMITER //
+CREATE TRIGGER check_doctor_numberDR BEFORE INSERT ON DOC_REG
+FOR EACH ROW
+BEGIN
+  IF NEW.doctor_number NOT LIKE 'DR%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END//
+DELIMITER ;
+
+
+CREATE TABLE DOC_ON_CALL (
+  doctor_number VARCHAR(10) PRIMARY KEY,
+  doctor_name VARCHAR(200) NOT NULL,
+  qualification VARCHAR(50) NOT NULL,
+  fees_per_call DECIMAL(10,2) NOT NULL,
+  payment_due DECIMAL(10,2) NOT NULL,
+  address VARCHAR(100) NOT NULL,
+  phone_number VARCHAR(15) NOT NULL,
+  FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number),
+  FOREIGN KEY (doctor_name) REFERENCES ALL_DOCTORS(doctor_name)
+);
+//TRIGGER FOR DC ONLY
+DELIMITER //
+CREATE TRIGGER check_doctor_numberDC BEFORE INSERT ON DOC_ON_CALL
+FOR EACH ROW
+BEGIN
+  IF NEW.doctor_number NOT LIKE 'DC%' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor number';
+  END IF;
+END//
+DELIMITER ;
+
+CREATE TABLE PAT_ENTRY (
+  patient_number VARCHAR(10) PRIMARY KEY,
+  patient_name VARCHAR(200) NOT NULL,
+  age INT NOT NULL,
+  sex CHAR(1) NOT NULL,
+  address VARCHAR(100) NOT NULL,
+  city VARCHAR(50) NOT NULL,
+  phone_number VARCHAR(15) NOT NULL,
+  entry_date DATE NOT NULL,
+  doctor_name VARCHAR(200) NOT NULL,
+  diagnosis VARCHAR(200) NOT NULL,
+  department_name VARCHAR(200) NOT NULL,
+  FOREIGN KEY (doctor_name) REFERENCES ALL_DOCTORS(doctor_name),
+  FOREIGN KEY (department_name) REFERENCES DEPARTMENT(department_name)
+);
+
+
+CREATE TABLE PAT_CHKUP (
+  patient_number VARCHAR(10) PRIMARY KEY,
+  doctor_number VARCHAR(10) NOT NULL,
+  date_of_checkup DATE NOT NULL,
+  diagnosis VARCHAR(200) NOT NULL,
+  treatment VARCHAR(200) NOT NULL,
+  status VARCHAR(200) NOT NULL,
+  FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number),
+  FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number)
+);
+//TRIGGER FOR STATUS
+DELIMITER //
+CREATE TRIGGER statusPatient BEFORE INSERT ON PAT_CHKUP
+FOR EACH ROW
+BEGIN
+  IF NEW.status NOT IN ('admitted', 'referred for operation', 'regular') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid doctor status';
+  END IF;
+END//
+DELIMITER ;
+
+CREATE TABLE ROOM_DETAILS (
+  room_number VARCHAR(10) PRIMARY KEY,
+  room_type CHAR(1) NOT NULL,
+  status CHAR(1) NOT NULL,
+  patient_number VARCHAR(10),
+  patient_name VARCHAR(200),
+  charges_per_day DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number)
+);
+
+CREATE TABLE PAT_ADMIT (
+  patient_number VARCHAR(10) PRIMARY KEY,
+  advance_payment DECIMAL(10,2) NOT NULL,
+  mode_of_payment VARCHAR(20) NOT NULL,
+  room_number VARCHAR(10) NOT NULL,
+  department_name VARCHAR(200) NOT NULL,
+  date_of_admission DATE NOT NULL,
+  initial_condition VARCHAR(200) NOT NULL,
+  diagnosis VARCHAR(200) NOT NULL,
+  treatment VARCHAR(200) NOT NULL,
+  doctor_number VARCHAR(10) NOT NULL,
+  attendant_name VARCHAR(200) NOT NULL,
+  FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number),
+  FOREIGN KEY (department_name) REFERENCES DEPARTMENT(department_name),
+  FOREIGN KEY (room_number) REFERENCES ROOM_DETAILS(room_number),
+  FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number)
+);
+
+CREATE TABLE PAT_DIS (
+  patient_number VARCHAR(10) PRIMARY KEY,
+  treatment_given VARCHAR(200) NOT NULL,
+  treatment_advice VARCHAR(200) NOT NULL,
+  payment_made DECIMAL(10,2) NOT NULL,
+  mode_of_payment VARCHAR(20) NOT NULL,
+  date_of_discharge DATE NOT NULL,
+  FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number)
+);
+
+CREATE TABLE PAT_REG (
+  patient_number VARCHAR(10) NOT NULL,
+  date_of_visit DATE NOT NULL,
+  diagnosis VARCHAR(200) NOT NULL,
+  treatment VARCHAR(200) NOT NULL,
+  medicine_recommended VARCHAR(200) NOT NULL,
+  status_of_treatment VARCHAR(20) NOT NULL,
+  PRIMARY KEY (patient_number, date_of_visit),
+  FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number)
+);
+
+CREATE TABLE OPERATION_THEATER (
+  operation_theater_number VARCHAR(10) PRIMARY KEY,
+  operation_theater_type VARCHAR(20) NOT NULL,
+  status CHAR(1) NOT NULL,
+  charges_per_hour DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE PAT_OPR (
+  patient_number VARCHAR(10) PRIMARY KEY,
+  date_of_admission DATE NOT NULL,
+  date_of_operation DATE NOT NULL,
+  doctor_number VARCHAR(10) NOT NULL,
+  operation_theater_number VARCHAR(10) NOT NULL,
+  type_of_operation VARCHAR(50) NOT NULL,
+  condition_before_operation VARCHAR(200) NOT NULL,
+  condition_after_operation VARCHAR(200) NOT NULL,
+  treatment_advice VARCHAR(200) NOT NULL,
+  department_name VARCHAR(200) NOT NULL,
+  FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number),
+  FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number),
+  FOREIGN KEY (operation_theater_number) REFERENCES OPERATION_THEATER(operation_theater_number),
+  FOREIGN KEY (department_name) REFERENCES DEPARTMENT(department_name)
+);
+
+
+DELIMITER //
+CREATE TRIGGER check_room_details BEFORE INSERT ON ROOM_DETAILS
+FOR EACH ROW
+BEGIN
+  IF NEW.room_type NOT IN ('G', 'P') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid room type';
+  END IF;
+  IF NEW.status NOT IN ('Y', 'N') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid status';
+  END IF;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER check_operation_theater BEFORE INSERT ON OPERATION_THEATER
+FOR EACH ROW
+BEGIN
+  IF NEW.operation_theater_type NOT IN ('general', 'special') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid operation theater type';
+  END IF;
+  IF NEW.status NOT IN ('Y', 'N') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid status';
+  END IF;
+END//
+DELIMITER ;
+
+CREATE TABLE audit_table (
+  patient_number VARCHAR(10) NOT NULL,
+  doctor_number VARCHAR(10) NOT NULL,
+  date_admitted DATE NOT NULL,
+  PRIMARY KEY (patient_number, doctor_number, date_admitted),
+  FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number),
+  FOREIGN KEY (doctor_number) REFERENCES ALL_DOCTORS(identity_number)
+);
+
+

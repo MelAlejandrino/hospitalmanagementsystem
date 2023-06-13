@@ -1,0 +1,40 @@
+3. DELIMITER //
+CREATE PROCEDURE admittedpatients()
+BEGIN
+    SELECT * FROM PAT_ADMIT;
+END //
+DELIMITER ;
+
+4. 
+DELIMITER //
+CREATE PROCEDURE OccupiedRooms()
+BEGIN 
+    SELECT * FROM ROOM_DETAILS WHERE status = 'Y';
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE VacantRooms()
+BEGIN 
+    SELECT * FROM ROOM_DETAILS WHERE status = 'N';
+END //
+DELIMITER ;
+
+5. DELIMITER //
+CREATE TRIGGER log_admission AFTER INSERT ON PAT_ADMIT
+FOR EACH ROW
+BEGIN
+  INSERT INTO audit_table (patient_number, doctor_number, date_admitted)
+  VALUES (NEW.patient_number, NEW.doctor_number, NEW.date_of_admission);
+END//
+DELIMITER ;
+
+6. DELIMITER //
+CREATE TRIGGER log_discharge AFTER INSERT ON PAT_DIS
+FOR EACH ROW
+BEGIN
+  UPDATE audit_table SET date_discharged = NEW.date_of_discharge
+  WHERE patient_number = NEW.patient_number;
+END//
+DELIMITER ;
+
