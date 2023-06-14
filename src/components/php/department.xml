@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<data>
+  <record>
+    <department_name>Cardiology</department_name>
+    <department_location>Building A, 2nd Floor</department_location>
+    <facilities_available>EKG, Echocardiography</facilities_available>
+  </record>
+  <record>
+    <department_name>Dermatology</department_name>
+    <department_location>Building C, 1st Floor</department_location>
+    <facilities_available>Skin biopsy</facilities_available>
+  </record>
+  <record>
+    <department_name>Orthopedics</department_name>
+    <department_location>Building B, 2nd Floor</department_location>
+    <facilities_available>X-ray, MRI</facilities_available>
+  </record>
+</data>

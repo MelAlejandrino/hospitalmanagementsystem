@@ -1,4 +1,5 @@
-3. DELIMITER //
+3. 
+DELIMITER //
 CREATE PROCEDURE admittedpatients()
 BEGIN
     SELECT * FROM PAT_ADMIT;

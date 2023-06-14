@@ -180,7 +180,7 @@ CREATE TABLE PAT_DIS (
   treatment_advice VARCHAR(200) NOT NULL,
   payment_made DECIMAL(10,2) NOT NULL,
   mode_of_payment VARCHAR(20) NOT NULL,
-  date_of_discharge DATE NOT NULL,
+  date_of_discharged DATE NOT NULL,
   FOREIGN KEY (patient_number) REFERENCES PAT_ENTRY(patient_number)
 );
 
